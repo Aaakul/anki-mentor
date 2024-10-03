@@ -7,6 +7,7 @@ import {
   SendOutlined,
   HeartFilled,
   GithubOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import type { InputRef } from "antd";
 import {
@@ -20,7 +21,7 @@ import {
   Tooltip,
 } from "antd";
 import Layout, { Content, Footer } from "antd/es/layout/layout";
-
+import axios from "axios";
 const tagInputStyle: React.CSSProperties = {
   width: 64,
   height: 22,
@@ -37,6 +38,18 @@ const App: React.FC = () => {
   const [editInputValue, setEditInputValue] = useState("");
   const inputRef = useRef<InputRef>(null);
   const editInputRef = useRef<InputRef>(null);
+  const [responseText, setResponseText] = useState("");
+
+  const handleSend = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/chat", {
+        message: tags.join(","),
+      });
+      setResponseText(response.data.response); // Update output text
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
 
   useEffect(() => {
     if (inputVisible) {
@@ -174,10 +187,11 @@ const App: React.FC = () => {
               height: "80vh",
             }}
             actions={[
-              <SendOutlined key="send" />,
+              <SendOutlined key="send" onClick={handleSend} />,
               <CopyOutlined key="copy" />,
               <ReloadOutlined key="reload" />,
               <SettingOutlined key="setting" />,
+              <QuestionCircleOutlined key="question" />,
             ]}
             extra={
               <a
@@ -197,7 +211,19 @@ const App: React.FC = () => {
                   style={{ height: "50vh", width: "auto" }}
                   className="output"
                 >
-                  <h4>Enter words you want to memorize into tags below...</h4>
+                  <pre
+                    id="output"
+                    style={{
+                      height: "100%",
+                      overflowY: "auto", // 添加垂直滚动条
+                      whiteSpace: "pre-wrap", // 保持换行符
+                      wordWrap: "break-word", // 自动换行
+                      padding: "10px", // 内边距
+                    }}
+                  >
+                    {responseText ||
+                      "Enter words you want to memorize into tags below..."}
+                  </pre>
                 </div>
               }
             >
