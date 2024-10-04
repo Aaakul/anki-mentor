@@ -12,6 +12,10 @@ code {
     monospace;
 }
 
-svg {
-  font-size: x-large;
+#output {
+  height: 100%;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 0.5rem;
 }

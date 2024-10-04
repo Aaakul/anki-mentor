@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   CopyOutlined,
-  PlusOutlined,
   SettingOutlined,
   ReloadOutlined,
   SendOutlined,
@@ -9,162 +8,129 @@ import {
   GithubOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import type { InputRef } from "antd";
 import {
   Card,
   ConfigProvider,
-  Flex,
-  Input,
   Space,
-  Tag,
   theme,
-  Tooltip,
+  message,
+  Radio,
+  Modal,
+  Flex,
 } from "antd";
+import type { RadioChangeEvent } from "antd";
 import Layout, { Content, Footer } from "antd/es/layout/layout";
 import axios from "axios";
-const tagInputStyle: React.CSSProperties = {
-  width: 64,
-  height: 22,
-  marginInlineEnd: 8,
-  verticalAlign: "top",
-};
+import TagEditor from "./components/TagEditor";
 
 const App: React.FC = () => {
-  const { token } = theme.useToken();
   const [tags, setTags] = useState<string[]>([]);
-  const [inputVisible, setInputVisible] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const [editInputIndex, setEditInputIndex] = useState(-1);
-  const [editInputValue, setEditInputValue] = useState("");
-  const inputRef = useRef<InputRef>(null);
-  const editInputRef = useRef<InputRef>(null);
   const [responseText, setResponseText] = useState("");
+  // Modal visibility
+  const [showSetting, setShowSetting] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(false);
 
   const handleSend = async () => {
-    try {
-      const response = await axios.post("http://localhost:5000/api/chat", {
-        message: tags.join(","),
-      });
-      setResponseText(response.data.response); // Update output text
-    } catch (error) {
-      console.error("Failed to send message:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (inputVisible) {
-      inputRef.current?.focus();
-    }
-  }, [inputVisible]);
-
-  useEffect(() => {
-    editInputRef.current?.focus();
-  }, [editInputValue]);
-
-  const handleClose = (removedTag: string) => {
-    const newTags = tags.filter((tag) => tag !== removedTag);
-    console.log(newTags);
-    setTags(newTags);
-  };
-
-  const showInput = () => {
-    setInputVisible(true);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleInputConfirm = () => {
-    if (inputValue && !tags.includes(inputValue)) {
-      setTags([...tags, inputValue]);
-    }
-    setInputVisible(false);
-    setInputValue("");
-  };
-
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditInputValue(e.target.value);
-  };
-
-  const handleEditInputConfirm = () => {
-    const newTags = [...tags];
-    newTags[editInputIndex] = editInputValue;
-    setTags(newTags);
-    setEditInputIndex(-1);
-    setEditInputValue("");
-  };
-
-  const tagPlusStyle: React.CSSProperties = {
-    height: 24,
-    background: token.colorBgContainer,
-    borderStyle: "dashed",
-  };
-
-  const editor = (
-    <Flex wrap>
-      {tags.map<React.ReactNode>((tag, index) => {
-        if (editInputIndex === index) {
-          return (
-            <Input
-              ref={editInputRef}
-              key={tag}
-              size="large"
-              style={tagInputStyle}
-              value={editInputValue}
-              onChange={handleEditInputChange}
-              onBlur={handleEditInputConfirm}
-              onPressEnter={handleEditInputConfirm}
-            />
-          );
-        }
-        const isLongTag = tag.length > 20;
-        const tagElem = (
-          <Tag
-            key={tag}
-            closable={index !== 0}
-            style={{ userSelect: "none" }}
-            onClose={() => handleClose(tag)}
-          >
-            <span
-              onDoubleClick={(e) => {
-                if (index !== 0) {
-                  setEditInputIndex(index);
-                  setEditInputValue(tag);
-                  e.preventDefault();
-                }
-              }}
-            >
-              {isLongTag ? `${tag.slice(0, 20)}...` : tag}
-            </span>
-          </Tag>
+    if (tags.length > 0) {
+      const words = tags.join(",");
+      try {
+        const response = await axios.post<string, any>(
+          process.env.REACT_APP_API_URL!,
+          {
+            message: words,
+          }
         );
-        return isLongTag ? (
-          <Tooltip title={tag} key={tag}>
-            {tagElem}
-          </Tooltip>
-        ) : (
-          tagElem
+        setResponseText(response.data.response); // Update output text
+      } catch (error) {
+        setResponseText(`Input:${words};Error:${error}`);
+      }
+    }
+  };
+
+  const handleCopy = () => {
+    if (responseText) {
+      if ("clipboard" in navigator) {
+        navigator.clipboard.writeText(responseText).then(
+          () => {
+            message.success("Copied to clipboard");
+          },
+          (err) => {
+            console.error("Failed to copy:", err);
+            message.error("Copy failed", err);
+          }
         );
-      })}
-      {inputVisible ? (
-        <Input
-          ref={inputRef}
-          type="text"
-          size="large"
-          style={tagInputStyle}
-          value={inputValue}
-          onChange={handleInputChange}
-          onBlur={handleInputConfirm}
-          onPressEnter={handleInputConfirm}
-        />
-      ) : (
-        <Tag style={tagPlusStyle} icon={<PlusOutlined />} onClick={showInput}>
-          New Word
-        </Tag>
-      )}
-    </Flex>
+      } else {
+        message.warning("Clipboard API is not supported.");
+      }
+    }
+  };
+
+  const handleReload = () => {
+    message.info("handleReload()");
+  };
+
+  const handleOk = () => {
+    setShowSetting(false);
+    setShowQuestion(false);
+  };
+
+  const handleCancel = () => {
+    setShowSetting(false);
+    setShowQuestion(false);
+  };
+
+  // Modal for settings
+  const handleSetting = () => {
+    setShowSetting(true);
+  };
+
+  const setting = (
+    <Modal
+      title="Target language"
+      open={showSetting}
+      onOk={handleOk}
+      onCancel={handleCancel}
+    >
+      <Radio.Group defaultValue="ja">
+        <Radio.Button value="ja">Japanese</Radio.Button>
+        <Radio.Button value="en" disabled>
+          English
+        </Radio.Button>
+      </Radio.Group>
+    </Modal>
   );
+
+  // Modal for question
+  const handleQuestion = () => {
+    setShowQuestion(true);
+  };
+
+  const question = (
+    <Modal
+      title="About"
+      open={showQuestion}
+      onOk={handleOk}
+      onCancel={handleCancel}
+    >
+      <h4>How to use?</h4>
+      <p>(Content)</p>
+      <p>(Content)</p>
+      <p>(Content)</p>
+      <p>(Content)</p>
+      <p>(Content)</p>
+    </Modal>
+  );
+
+  const actionIcons = [
+    <SendOutlined onClick={handleSend} style={{ fontSize: "x-large" }} />,
+    <CopyOutlined onClick={handleCopy} style={{ fontSize: "x-large" }} />,
+    <ReloadOutlined onClick={handleReload} style={{ fontSize: "x-large" }} />,
+    <SettingOutlined onClick={handleSetting} style={{ fontSize: "x-large" }} />,
+    <QuestionCircleOutlined
+      onClick={handleQuestion}
+      style={{ fontSize: "x-large" }}
+    />,
+  ];
 
   return (
     <ConfigProvider
@@ -182,23 +148,26 @@ const App: React.FC = () => {
         >
           <Card
             bordered={false}
-            title={<h2 style={{ textAlign: "center" }}>anki mentor</h2>}
+            title={
+              <div style={{ textAlign: "center" }}>
+                <h2 style={{ margin: 0, marginBottom: "0.25rem" }}>
+                  anki mentor
+                </h2>
+                <p style={{ margin: 0, marginBottom: "0.25rem" }}>
+                  *For experimental use only*
+                </p>
+              </div>
+            }
             style={{
               height: "80vh",
             }}
-            actions={[
-              <SendOutlined key="send" onClick={handleSend} />,
-              <CopyOutlined key="copy" />,
-              <ReloadOutlined key="reload" />,
-              <SettingOutlined key="setting" />,
-              <QuestionCircleOutlined key="question" />,
-            ]}
+            actions={actionIcons}
             extra={
               <a
                 href="https://www.github.com/aaakul"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: "inherit" }}
+                style={{ color: "inherit", fontSize: "large" }}
               >
                 <GithubOutlined />
               </a>
@@ -207,29 +176,19 @@ const App: React.FC = () => {
             <Card
               type="inner"
               title={
-                <div
-                  style={{ height: "50vh", width: "auto" }}
-                  className="output"
-                >
-                  <pre
-                    id="output"
-                    style={{
-                      height: "100%",
-                      overflowY: "auto", // 添加垂直滚动条
-                      whiteSpace: "pre-wrap", // 保持换行符
-                      wordWrap: "break-word", // 自动换行
-                      padding: "10px", // 内边距
-                    }}
-                  >
+                <div style={{ height: "50vh", width: "auto" }}>
+                  <pre id="output">
                     {responseText ||
                       "Enter words you want to memorize into tags below..."}
                   </pre>
                 </div>
               }
             >
-              {editor}
+              <TagEditor initialTags={[]} maxTags={10} onChange={setTags} />
             </Card>
           </Card>
+          {setting}
+          {question}
         </Content>
         <Footer
           style={{
@@ -244,7 +203,7 @@ const App: React.FC = () => {
             rel="noopener noreferrer"
           >
             <Space>
-              Made with Ant Design and
+              Made with antd and
               <HeartFilled />
             </Space>
           </a>

@@ -2,7 +2,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask_cors import cross_origin
+
 
 # Get free access on https://build.nvidia.com/
 # Set api key in .env: NV_API=your-token-goes-here
@@ -11,23 +12,24 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
-
-print("Running...")
+print(f"Using NIM...")
 
 client = OpenAI(
   base_url = "https://integrate.api.nvidia.com/v1",
   api_key = os.getenv("NV_API"),
 )
 
-@app.route('/api/chat', methods=['POST'])
+@app.route('/chat', methods=['POST'])
+@cross_origin()
 def chat():
     data = request.get_json()
     user_message = data.get('message')
+    language = "Japanese"
+    send_message = f"I am a foreign language learner. Use those words: \"{user_message}\" to write a easy, concise {language} essay of 100 words or less to help me remember them. Ignore unfriendly or incomprehensible content. Only the body part is needed, no explanation or instructions."
     if user_message:
         completion = client.chat.completions.create(
             model="meta/llama-3.1-405b-instruct",
-            messages=[{"role": "user", "content": user_message}],
+            messages=[{"role": "user", "content": send_message}],
             temperature=0.2,
             top_p=0.7,
             max_tokens=1024,
@@ -39,4 +41,4 @@ def chat():
         return jsonify({"error": "No message provided"}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5000,)
+    app.run(debug=True, host='0.0.0.0', port=5000,)
