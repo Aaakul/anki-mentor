@@ -16,7 +16,7 @@ import {
   message,
   Radio,
   Modal,
-  Flex,
+  Popover,
 } from "antd";
 import type { RadioChangeEvent } from "antd";
 import Layout, { Content, Footer } from "antd/es/layout/layout";
@@ -29,6 +29,8 @@ const App: React.FC = () => {
   // Modal visibility
   const [showSetting, setShowSetting] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
+  // Output language
+  const [lang, setLang] = useState("ja");
 
   const handleSend = async () => {
     if (tags.length > 0) {
@@ -66,7 +68,7 @@ const App: React.FC = () => {
   };
 
   const handleReload = () => {
-    message.info("handleReload()");
+    handleSend();
   };
 
   const handleOk = () => {
@@ -91,12 +93,19 @@ const App: React.FC = () => {
       onOk={handleOk}
       onCancel={handleCancel}
     >
-      <Radio.Group defaultValue="ja">
-        <Radio.Button value="ja">Japanese</Radio.Button>
-        <Radio.Button value="en" disabled>
-          English
-        </Radio.Button>
-      </Radio.Group>
+      <div>
+        <p>Select the language of article</p>
+        <Radio.Group
+          defaultValue="ja"
+          onChange={(e: RadioChangeEvent) => setLang(e.target.value)}
+          style={{ display: "flex", justifyContent: "center" }}
+        >
+          <Radio.Button value="ja">Japanese</Radio.Button>
+          <Radio.Button value="en" disabled>
+            English
+          </Radio.Button>
+        </Radio.Group>
+      </div>
     </Modal>
   );
 
@@ -113,23 +122,49 @@ const App: React.FC = () => {
       onCancel={handleCancel}
     >
       <h4>How to use?</h4>
-      <p>(Content)</p>
-      <p>(Content)</p>
-      <p>(Content)</p>
-      <p>(Content)</p>
-      <p>(Content)</p>
+      <p>
+        Click on the tag editor to add new words. For batch additions, separate
+        each word with spaces, commas, or semicolons.
+      </p>
+      <p>
+        Once you've added your desired words, click <SendOutlined /> to receive
+        example essay based on your input.
+      </p>
+      <p>
+        Click <CopyOutlined /> to paste text into your clipboard.
+      </p>
+      <p>
+        If you need different content, simply click <ReloadOutlined />
+      </p>
+      <p>
+        To change the language of the content, click <SettingOutlined />{" "}
+        Currently, Japanese is supported.
+      </p>
     </Modal>
   );
 
   const actionIcons = [
-    <SendOutlined onClick={handleSend} style={{ fontSize: "x-large" }} />,
-    <CopyOutlined onClick={handleCopy} style={{ fontSize: "x-large" }} />,
-    <ReloadOutlined onClick={handleReload} style={{ fontSize: "x-large" }} />,
-    <SettingOutlined onClick={handleSetting} style={{ fontSize: "x-large" }} />,
-    <QuestionCircleOutlined
-      onClick={handleQuestion}
-      style={{ fontSize: "x-large" }}
-    />,
+    <Popover title="Send">
+      <SendOutlined onClick={handleSend} style={{ fontSize: "x-large" }} />
+    </Popover>,
+    <Popover title="Copy">
+      <CopyOutlined onClick={handleCopy} style={{ fontSize: "x-large" }} />
+    </Popover>,
+    <Popover title="Regenerate">
+      <ReloadOutlined onClick={handleReload} style={{ fontSize: "x-large" }} />
+    </Popover>,
+    <Popover title="Setting">
+      <SettingOutlined
+        onClick={handleSetting}
+        style={{ fontSize: "x-large" }}
+      />
+    </Popover>,
+    <Popover title="About">
+      <QuestionCircleOutlined
+        onClick={handleQuestion}
+        style={{ fontSize: "x-large" }}
+      />
+    </Popover>,
   ];
 
   return (
