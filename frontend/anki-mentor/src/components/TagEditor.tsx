@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
 import { Flex, Input, Tag, theme, Tooltip } from "antd";
 
@@ -10,6 +10,7 @@ interface TagEditorProps {
   initialTags?: string[];
   maxTags?: number;
   onChange?: (newTags: string[]) => void;
+  clearTags?: () => void;
 }
 
 const TagEditor: React.FC<TagEditorProps> = ({
@@ -52,6 +53,11 @@ const TagEditor: React.FC<TagEditorProps> = ({
     const newTags = tags.filter((tag) => tag !== removedTag);
     setTags(newTags);
     onChange && onChange(newTags);
+  };
+
+  const handleClearAll = () => {
+    setTags([]);
+    onChange && onChange([]);
   };
 
   const showInput = () => {
@@ -159,9 +165,16 @@ const TagEditor: React.FC<TagEditorProps> = ({
           onPressEnter={handleInputConfirm}
         />
       ) : (
-        <Tag style={TagPlusStyle} icon={<PlusOutlined />} onClick={showInput}>
-          New word
-        </Tag>
+        <>
+          <Tag style={TagPlusStyle} icon={<PlusOutlined />} onClick={showInput}>
+            New word
+          </Tag>
+          {tags.length > 0 && (
+            <Tag icon={<DeleteOutlined />} onClick={handleClearAll}>
+              Clear all
+            </Tag>
+          )}
+        </>
       )}
     </Flex>
   );

@@ -7,6 +7,7 @@ import {
   HeartFilled,
   GithubOutlined,
   QuestionCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import {
   Card,
@@ -16,7 +17,7 @@ import {
   message,
   Radio,
   Modal,
-  Popover,
+  Tooltip,
 } from "antd";
 import type { RadioChangeEvent } from "antd";
 import Layout, { Content, Footer } from "antd/es/layout/layout";
@@ -30,7 +31,7 @@ const App: React.FC = () => {
   const [showSetting, setShowSetting] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
   // Output language
-  const [lang, setLang] = useState("ja");
+  const [lang, setLang] = useState("Japanese");
 
   const handleSend = async () => {
     if (tags.length > 0) {
@@ -39,9 +40,11 @@ const App: React.FC = () => {
         const response = await axios.post<string, any>(
           process.env.REACT_APP_API_URL!,
           {
-            message: words,
+            words: words,
+            language: lang,
           }
         );
+
         setResponseText(response.data.response); // Update output text
       } catch (error) {
         setResponseText(`Input:${words};Error:${error}`);
@@ -96,14 +99,12 @@ const App: React.FC = () => {
       <div>
         <p>Select the language of article</p>
         <Radio.Group
-          defaultValue="ja"
+          defaultValue="Japanese"
           onChange={(e: RadioChangeEvent) => setLang(e.target.value)}
           style={{ display: "flex", justifyContent: "center" }}
         >
-          <Radio.Button value="ja">Japanese</Radio.Button>
-          <Radio.Button value="en" disabled>
-            English
-          </Radio.Button>
+          <Radio.Button value="Japanese">Japanese</Radio.Button>
+          <Radio.Button value="English">English</Radio.Button>
         </Radio.Group>
       </div>
     </Modal>
@@ -116,12 +117,11 @@ const App: React.FC = () => {
 
   const question = (
     <Modal
-      title="About"
+      title="How to use?"
       open={showQuestion}
       onOk={handleOk}
       onCancel={handleCancel}
     >
-      <h4>How to use?</h4>
       <p>
         Click on the tag editor to add new words. For batch additions, separate
         each word with spaces, commas, or semicolons.
@@ -134,6 +134,9 @@ const App: React.FC = () => {
         Click <CopyOutlined /> to paste text into your clipboard.
       </p>
       <p>
+        Click <DeleteOutlined /> to clear entered words.
+      </p>
+      <p>
         If you need different content, simply click <ReloadOutlined />
       </p>
       <p>
@@ -144,27 +147,27 @@ const App: React.FC = () => {
   );
 
   const actionIcons = [
-    <Popover title="Send">
+    <Tooltip title="Generate" zIndex={0}>
       <SendOutlined onClick={handleSend} style={{ fontSize: "x-large" }} />
-    </Popover>,
-    <Popover title="Copy">
+    </Tooltip>,
+    <Tooltip title="Copy to clipboard" zIndex={0}>
       <CopyOutlined onClick={handleCopy} style={{ fontSize: "x-large" }} />
-    </Popover>,
-    <Popover title="Regenerate">
+    </Tooltip>,
+    <Tooltip title="Generate new article" zIndex={0}>
       <ReloadOutlined onClick={handleReload} style={{ fontSize: "x-large" }} />
-    </Popover>,
-    <Popover title="Setting">
+    </Tooltip>,
+    <Tooltip title="Setting" zIndex={0}>
       <SettingOutlined
         onClick={handleSetting}
         style={{ fontSize: "x-large" }}
       />
-    </Popover>,
-    <Popover title="About">
+    </Tooltip>,
+    <Tooltip title="About" zIndex={0}>
       <QuestionCircleOutlined
         onClick={handleQuestion}
         style={{ fontSize: "x-large" }}
       />
-    </Popover>,
+    </Tooltip>,
   ];
 
   return (

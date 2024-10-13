@@ -23,10 +23,13 @@ client = OpenAI(
 @cross_origin()
 def chat():
     data = request.get_json()
-    user_message = data.get('message')
-    language = "Japanese"
-    send_message = f"I am a foreign language learner. Use those words: \"{user_message}\" to write a easy, concise {language} essay of 100 words or less to help me remember them. Ignore unfriendly or incomprehensible content. Only the body part is needed, no explanation or instructions."
-    if user_message:
+    words = data.get('words')
+    language = data.get("language") 
+    send_message = f"""I am a foreign language learner. 
+                    Use those words: {words} to write a easy, concise {language} essay of 100 words or less to help me remember them. 
+                    Ignore unfriendly or incomprehensible content. 
+                    Only the body part is needed, no explanation or instructions."""
+    if words:
         completion = client.chat.completions.create(
             model="meta/llama-3.1-405b-instruct",
             messages=[{"role": "user", "content": send_message}],
@@ -41,4 +44,4 @@ def chat():
         return jsonify({"error": "No message provided"}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000,)
+    app.run(debug=False, host='0.0.0.0', port=5000,)

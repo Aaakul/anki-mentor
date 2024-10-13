@@ -10,9 +10,13 @@ print("Running test server...")
 @cross_origin()
 def chat():
     data = request.get_json()
-    user_message = data.get('message')
-    if user_message:
-        test_response = f"user message: {user_message}; {japanese_lorem}"
+    words = data.get('words')
+    language = data.get("language") 
+    
+    if words:
+        test_response = (f"words: {words}; language: {language}; {japanese_lorem}"
+                         if language == "Japanese" else
+                         f"words: {words}; language: {language}; {lorem_latin}")
         return jsonify({"response": test_response}), 200
     else:
         return jsonify({"error": "No message provided"}), 400
