@@ -52,6 +52,11 @@ const App: React.FC = () => {
     }
   };
 
+  /*
+  Compatibility need to be improved
+  Safari doesn't support clipboard write in HTTP environment
+  Chrome doesn't work, reason need to be found out
+  */
   const handleCopy = () => {
     if (responseText) {
       if ("clipboard" in navigator) {
