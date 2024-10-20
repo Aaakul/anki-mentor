@@ -36,42 +36,63 @@ const App: React.FC = () => {
   const handleSend = async () => {
     if (tags.length > 0) {
       const words = tags.join(",");
-      try {
-        const response = await axios.post<string, any>(
-          process.env.REACT_APP_API_URL!,
-          {
-            words: words,
-            language: lang,
-          }
-        );
+      if (process.env.REACT_APP_ENV === "preview") {
+        const lorem: string =
+          lang === "ja"
+            ? "あら、蠍の火だなカムパネルラがまた何気なくしかるように叫びました。向こうとこっちの岸にね、おっかさんお話しなすったわ、そのとき出ているそらがそのまま楕円形のなかには涙がいっぱいに風に吹かれているらしく、無理に笑いながら男の子をジョバンニのポケットに入れました。もう涼しいからねジョバンニは立って窓をしめておこうかああ、どうか小さな人たちをだいて、それからしばらくしいんとしました。そしてしばらく木のある町を通って行くのでした。おっかさんが、ほんとうにもうそのまま胸にもつるされそうになり、天の川もまるで遠くへ行ったのだ。"
+            : "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Molestias mollitia quibusdam quas est pariatur dignissimos hic atque reiciendis, sit, recusandae magnam, laudantium cupiditate voluptatum soluta. In natus ipsum minus veritatis.";
+        setResponseText(`User input: ${words}; Lorem text: ${lorem} `);
+      } else {
+        try {
+          const response = await axios.post<string, any>(
+            process.env.REACT_APP_API_URL!,
+            {
+              words: words,
+              language: lang,
+            }
+          );
 
-        setResponseText(response.data.response); // Update output text
-      } catch (error) {
-        setResponseText(`Input:${words};Error:${error}`);
+          setResponseText(response.data.response); // Update output text
+        } catch (error) {
+          setResponseText(`Input:${words};Error:${error}`);
+        }
       }
     }
   };
 
-  /*
-  Compatibility need to be improved
-  Safari doesn't support clipboard write in HTTP environment
-  Chrome doesn't work, reason need to be found out
-  */
-  const handleCopy = () => {
-    if (responseText) {
-      if ("clipboard" in navigator) {
-        navigator.clipboard.writeText(responseText).then(
-          () => {
-            message.success("Copied to clipboard");
-          },
-          (err) => {
-            console.error("Failed to copy:", err);
-            message.error("Copy failed", err);
-          }
-        );
-      } else {
-        message.warning("Clipboard API is not supported.");
+  const handleCopy = async () => {
+    if (!responseText) return;
+    // only allowed in TLS
+    if ("clipboard" in navigator) {
+      try {
+        await navigator.clipboard.writeText(responseText);
+        message.success("Copied to clipboard");
+      } catch (err) {
+        console.error("Failed to copy:", err);
+        message.error("Copy failed");
       }
+    } else {
+      // fallback method
+      // hidden element
+      const textarea = document.createElement("textarea");
+      textarea.value = responseText;
+      // Prevent scrolling to the bottom of the page
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      try {
+        // simulates clipboard copying behavior
+        document.execCommand("copy");
+        message.success("Copied to clipboard");
+      } catch (err) {
+        console.error("Failed to copy:", err);
+        message.error("Copy failed");
+      }
+
+      document.body.removeChild(textarea);
     }
   };
 
@@ -175,6 +196,18 @@ const App: React.FC = () => {
     </Tooltip>,
   ];
 
+  let subtitle;
+
+  if (process.env.REACT_APP_ENV === "preview") {
+    subtitle = "*Demo version*";
+  } else if (process.env.REACT_APP_ENV === "development") {
+    subtitle = "*Development version*";
+  } else if (process.env.REACT_APP_ENV === "production") {
+    subtitle = "*For experimental use only*";
+  } else {
+    subtitle = "UNKNOWN ENVIRONMENT";
+  }
+
   return (
     <ConfigProvider
       componentSize="large"
@@ -196,9 +229,7 @@ const App: React.FC = () => {
                 <h2 style={{ margin: 0, marginBottom: "0.25rem" }}>
                   anki mentor
                 </h2>
-                <p style={{ margin: 0, marginBottom: "0.25rem" }}>
-                  *For experimental use only*
-                </p>
+                <p style={{ margin: 0, marginBottom: "0.25rem" }}>{subtitle}</p>
               </div>
             }
             style={{
