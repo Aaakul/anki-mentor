@@ -12,6 +12,25 @@ code {
     monospace;
 }
 
+.card-header-container {
+  display: flex;
+  /* justify-content: "space-between"; */
+  align-items: "center";
+}
+.toggle-theme {
+  margin: auto;
+  margin-left: 0;
+  font-size: large;
+}
+
+.titles {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin-right: auto;
+}
+
 #output {
   height: 100%;
   overflow: auto;

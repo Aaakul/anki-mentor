@@ -8,6 +8,8 @@ import {
   GithubOutlined,
   QuestionCircleOutlined,
   DeleteOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from "@ant-design/icons";
 import {
   Card,
@@ -32,6 +34,10 @@ const App: React.FC = () => {
   const [showQuestion, setShowQuestion] = useState(false);
   // Output language
   const [lang, setLang] = useState("Japanese");
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
+  };
 
   const handleSend = async () => {
     if (tags.length > 0) {
@@ -54,7 +60,7 @@ const App: React.FC = () => {
           // Update output text
           setResponseText(response.data.response);
         } catch (error) {
-          setResponseText(`Input:${words};Error:${error}`);
+          setResponseText(`Input:${words};Language:${lang}Error:${error}`);
         }
       }
     }
@@ -105,11 +111,6 @@ const App: React.FC = () => {
     setShowQuestion(false);
   };
 
-  const handleCancel = () => {
-    setShowSetting(false);
-    setShowQuestion(false);
-  };
-
   // Modal for settings
   const handleSetting = () => {
     setShowSetting(true);
@@ -120,7 +121,8 @@ const App: React.FC = () => {
       title="Target language"
       open={showSetting}
       onOk={handleOk}
-      onCancel={handleCancel}
+      cancelButtonProps={{ style: { visibility: "hidden" } }}
+      // onCancel={handleCancel}
     >
       <div>
         <p>Select the language of article</p>
@@ -146,7 +148,7 @@ const App: React.FC = () => {
       title="How to use?"
       open={showQuestion}
       onOk={handleOk}
-      onCancel={handleCancel}
+      cancelButtonProps={{ style: { visibility: "hidden" } }}
     >
       <p>
         Click on the tag editor to add new words. For batch additions, separate
@@ -196,6 +198,7 @@ const App: React.FC = () => {
     </Tooltip>,
   ];
 
+  // display version information
   let subtitle;
 
   if (process.env.REACT_APP_ENV === "preview") {
@@ -212,7 +215,8 @@ const App: React.FC = () => {
     <ConfigProvider
       componentSize="large"
       theme={{
-        algorithm: theme.darkAlgorithm,
+        // dark theme by default
+        algorithm: isDarkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
     >
       <Layout>
@@ -225,11 +229,18 @@ const App: React.FC = () => {
           <Card
             bordered={false}
             title={
-              <div style={{ textAlign: "center" }}>
-                <h2 style={{ margin: 0, marginBottom: "0.25rem" }}>
-                  anki mentor
-                </h2>
-                <p style={{ margin: 0, marginBottom: "0.25rem" }}>{subtitle}</p>
+              <div className="card-header-container">
+                <div className="toggle-theme" onClick={toggleTheme}>
+                  {isDarkTheme ? <SunOutlined /> : <MoonOutlined />}
+                </div>
+                <div className="titles">
+                  <h2 style={{ margin: 0, marginBottom: "0.25rem" }}>
+                    anki mentor
+                  </h2>
+                  <p style={{ margin: 0, marginBottom: "0.25rem" }}>
+                    {subtitle}
+                  </p>
+                </div>
               </div>
             }
             style={{
@@ -237,14 +248,21 @@ const App: React.FC = () => {
             }}
             actions={actionIcons}
             extra={
-              <a
-                href="https://www.github.com/aaakul"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "inherit", fontSize: "large" }}
-              >
-                <GithubOutlined />
-              </a>
+              <Space>
+                <a
+                  href="https://www.github.com/aaakul"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "inherit",
+                    fontSize: "large",
+                    marginRight: 0,
+                    margin: "auto",
+                  }}
+                >
+                  <GithubOutlined />
+                </a>
+              </Space>
             }
           >
             <Card
@@ -253,7 +271,7 @@ const App: React.FC = () => {
                 <div style={{ height: "50vh", width: "auto" }}>
                   <pre id="output">
                     {responseText ||
-                      "Enter words you want to memorize into tags below..."}
+                      `Enter ${lang} words you want to memorize into tags below...`}
                   </pre>
                 </div>
               }
