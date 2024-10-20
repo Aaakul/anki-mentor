@@ -38,7 +38,7 @@ const App: React.FC = () => {
       const words = tags.join(",");
       if (process.env.REACT_APP_ENV === "preview") {
         const lorem: string =
-          lang === "ja"
+          lang === "Japanese"
             ? "あら、蠍の火だなカムパネルラがまた何気なくしかるように叫びました。向こうとこっちの岸にね、おっかさんお話しなすったわ、そのとき出ているそらがそのまま楕円形のなかには涙がいっぱいに風に吹かれているらしく、無理に笑いながら男の子をジョバンニのポケットに入れました。もう涼しいからねジョバンニは立って窓をしめておこうかああ、どうか小さな人たちをだいて、それからしばらくしいんとしました。そしてしばらく木のある町を通って行くのでした。おっかさんが、ほんとうにもうそのまま胸にもつるされそうになり、天の川もまるで遠くへ行ったのだ。"
             : "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Molestias mollitia quibusdam quas est pariatur dignissimos hic atque reiciendis, sit, recusandae magnam, laudantium cupiditate voluptatum soluta. In natus ipsum minus veritatis.";
         setResponseText(`User input: ${words}; Lorem text: ${lorem} `);
@@ -51,8 +51,8 @@ const App: React.FC = () => {
               language: lang,
             }
           );
-
-          setResponseText(response.data.response); // Update output text
+          // Update output text
+          setResponseText(response.data.response);
         } catch (error) {
           setResponseText(`Input:${words};Error:${error}`);
         }
