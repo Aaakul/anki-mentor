@@ -125,19 +125,26 @@ const App: React.FC = () => {
     setShowSetting(true);
   };
 
+  const handleLangChange = (e: RadioChangeEvent) => {
+    const newLang = e.target.value;
+    setLang(newLang);
+    setResponseText(
+      `Enter ${newLang} words you want to memorize into tags below...`
+    );
+  };
+
   const setting = (
     <Modal
       title="Target language"
       open={showSetting}
       onOk={handleOk}
       cancelButtonProps={{ style: { visibility: "hidden" } }}
-      // onCancel={handleCancel}
     >
       <div>
         <p>Select the language of article</p>
         <Radio.Group
           defaultValue="Japanese"
-          onChange={(e: RadioChangeEvent) => setLang(e.target.value)}
+          onChange={handleLangChange}
           style={{ display: "flex", justifyContent: "center" }}
         >
           <Radio.Button value="Japanese">Japanese</Radio.Button>
