@@ -12,11 +12,10 @@ def chat():
     data = request.get_json()
     words = data.get('words')
     language = data.get("language") 
-    
+    regenerate = data.get("regenerate") 
+    lorem = japanese_lorem if language == "Japanese" else lorem_latin
     if words:
-        test_response = (f"words: {words}; language: {language}; {japanese_lorem}"
-                         if language == "Japanese" else
-                         f"words: {words}; language: {language}; {lorem_latin}")
+        test_response = (f"Words: {words}; Regenerate: {regenerate}; {lorem};")
         return jsonify({"response": test_response}), 200
     else:
         return jsonify({"error": "No message provided"}), 400

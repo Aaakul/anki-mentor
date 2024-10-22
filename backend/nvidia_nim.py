@@ -24,9 +24,10 @@ client = OpenAI(
 def chat():
     data = request.get_json()
     words = data.get('words')
-    language = data.get("language") 
+    language = data.get("language")
+    regenerate = "another" if data.get("regenerate") else "a"
     send_message = f"""I am a foreign language learner. 
-                    Use those words: {words} to write a easy, concise {language} essay of 100 words or less to help me remember them. 
+                    Use those words: {words} to write {regenerate} easy, concise {language} essay of 100 words or less to help me remember them. 
                     Ignore unfriendly or incomprehensible content. 
                     Only the body part is needed, no explanation or instructions."""
     if words:

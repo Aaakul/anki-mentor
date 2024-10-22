@@ -104,7 +104,7 @@ const TagEditor: React.FC<TagEditorProps> = ({
 
   const splitAndTrim = (value: string): string[] => {
     return value
-      .split(/[,;　，；、]/) // Match comma, semicolon, and their full-width forms
+      .split(/[ ,;　，；、]/) // Match space, comma, semicolon, and their full-width forms
       .map((v) => v.trim()) // Trim spaces
       .filter((v) => v !== ""); // Filter out empty strings
   };

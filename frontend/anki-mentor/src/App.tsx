@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   CopyOutlined,
   SettingOutlined,
@@ -28,26 +28,32 @@ import TagEditor from "./components/TagEditor";
 
 const App: React.FC = () => {
   const [tags, setTags] = useState<string[]>([]);
-  const [responseText, setResponseText] = useState("");
+  // Output language
+  const [lang, setLang] = useState("Japanese");
+  const [responseText, setResponseText] = useState(
+    `Enter ${lang} words you want to memorize into tags below...`
+  );
+  const [regenerate, setRegenerate] = useState(false);
   // Modal visibility
   const [showSetting, setShowSetting] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
-  // Output language
-  const [lang, setLang] = useState("Japanese");
+  const loremJP =
+    "あら、蠍の火だなカムパネルラがまた何気なくしかないように叫びました。向こうとこっちの岸にね、おっかさんお話しなすったわ、そのとき出ているそらがそのまま楕円形のなかには涙がいっぱいに風に吹かれているらしく、無理に笑いながら男の子をジョバンニのポケットに入れました...";
+  const loremEN =
+    "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Molestias mollitia quibusdam quas est pariatur dignissimos hic atque reiciendis, sit, recusandae magnam, laudantium cupiditate voluptatum soluta. In natus ipsum minus veritatis.";
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const toggleTheme = () => {
     setIsDarkTheme(!isDarkTheme);
   };
 
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (tags.length > 0) {
       const words = tags.join(",");
       if (process.env.REACT_APP_ENV === "preview") {
-        const lorem: string =
-          lang === "Japanese"
-            ? "あら、蠍の火だなカムパネルラがまた何気なくしかるように叫びました。向こうとこっちの岸にね、おっかさんお話しなすったわ、そのとき出ているそらがそのまま楕円形のなかには涙がいっぱいに風に吹かれているらしく、無理に笑いながら男の子をジョバンニのポケットに入れました。もう涼しいからねジョバンニは立って窓をしめておこうかああ、どうか小さな人たちをだいて、それからしばらくしいんとしました。そしてしばらく木のある町を通って行くのでした。おっかさんが、ほんとうにもうそのまま胸にもつるされそうになり、天の川もまるで遠くへ行ったのだ。"
-            : "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Molestias mollitia quibusdam quas est pariatur dignissimos hic atque reiciendis, sit, recusandae magnam, laudantium cupiditate voluptatum soluta. In natus ipsum minus veritatis.";
-        setResponseText(`User input: ${words}; Lorem text: ${lorem} `);
+        const lorem = lang === "Japanese" ? loremJP : loremEN;
+        setResponseText(
+          `User input: ${words}; Lorem text: ${lorem}; Regenerate: ${regenerate}`
+        );
       } else {
         try {
           const response = await axios.post<string, any>(
@@ -55,56 +61,59 @@ const App: React.FC = () => {
             {
               words: words,
               language: lang,
+              regenerate: regenerate,
             }
           );
-          // Update output text
+          // update output
           setResponseText(response.data.response);
         } catch (error) {
-          setResponseText(`Input:${words};Language:${lang}Error:${error}`);
+          setResponseText(
+            `User input: ${words}; Language: ${lang}; Regenerate: ${regenerate}; Error: ${error}`
+          );
         }
       }
+      setRegenerate(false); // reset regenerate state
     }
-  };
+  }, [tags, lang, regenerate]);
 
-  const handleCopy = async () => {
-    if (!responseText) return;
-    // only allowed in TLS
-    if ("clipboard" in navigator) {
-      try {
+  // regenerate context
+  const handleReload = useCallback(async () => {
+    if (tags.length > 0 && !responseText.endsWith("into tags below...")) {
+      setRegenerate(true);
+    }
+  }, [tags, responseText]);
+  // only recreate handleSend when needed
+  useEffect(() => {
+    if (regenerate) {
+      handleSend(); // wait handleSend
+    }
+  }, [regenerate, handleSend]);
+
+  const handleCopy = useCallback(async () => {
+    if (!responseText || responseText.endsWith("into tags below...")) return;
+    try {
+      if ("clipboard" in navigator) {
         await navigator.clipboard.writeText(responseText);
-        message.success("Copied to clipboard");
-      } catch (err) {
-        console.error("Failed to copy:", err);
-        message.error("Copy failed");
-      }
-    } else {
-      // fallback method
-      // hidden element
-      const textarea = document.createElement("textarea");
-      textarea.value = responseText;
-      // Prevent scrolling to the bottom of the page
-      textarea.style.position = "absolute";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-
-      try {
-        // simulates clipboard copying behavior
+      } else {
+        // fallback method
+        // hidden element
+        const textarea = document.createElement("textarea");
+        textarea.value = responseText;
+        // prevent scrolling to the bottom of the page
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
         document.execCommand("copy");
-        message.success("Copied to clipboard");
-      } catch (err) {
-        console.error("Failed to copy:", err);
-        message.error("Copy failed");
+        document.body.removeChild(textarea);
       }
-
-      document.body.removeChild(textarea);
+      message.success("Copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      message.error("Copy failed");
     }
-  };
-
-  const handleReload = () => {
-    handleSend();
-  };
+  }, [responseText]);
 
   const handleOk = () => {
     setShowSetting(false);
@@ -176,13 +185,21 @@ const App: React.FC = () => {
 
   const actionIcons = [
     <Tooltip title="Generate" zIndex={0}>
-      <SendOutlined onClick={handleSend} style={{ fontSize: "x-large" }} />
+      <SendOutlined
+        onClick={handleSend}
+        disabled={regenerate}
+        style={{ fontSize: "x-large" }}
+      />
     </Tooltip>,
     <Tooltip title="Copy to clipboard" zIndex={0}>
       <CopyOutlined onClick={handleCopy} style={{ fontSize: "x-large" }} />
     </Tooltip>,
     <Tooltip title="Generate new article" zIndex={0}>
-      <ReloadOutlined onClick={handleReload} style={{ fontSize: "x-large" }} />
+      <ReloadOutlined
+        onClick={handleReload}
+        disabled={regenerate}
+        style={{ fontSize: "x-large" }}
+      />
     </Tooltip>,
     <Tooltip title="Setting" zIndex={0}>
       <SettingOutlined
@@ -199,16 +216,20 @@ const App: React.FC = () => {
   ];
 
   // display version information
-  let subtitle;
-
-  if (process.env.REACT_APP_ENV === "preview") {
-    subtitle = "*Demo version*";
-  } else if (process.env.REACT_APP_ENV === "development") {
-    subtitle = "*Development version*";
-  } else if (process.env.REACT_APP_ENV === "production") {
-    subtitle = "*For experimental use only*";
-  } else {
-    subtitle = "UNKNOWN ENVIRONMENT";
+  let subtitle: string;
+  switch (process.env.REACT_APP_ENV) {
+    case "preview":
+      subtitle = "*Demo version*";
+      break;
+    case "development":
+      subtitle = "*Development version*";
+      break;
+    case "production":
+      subtitle = "*For experimental use only*";
+      break;
+    default:
+      subtitle = "*UNKNOWN ENVIRONMENT*";
+      break;
   }
 
   return (
@@ -269,10 +290,7 @@ const App: React.FC = () => {
               type="inner"
               title={
                 <div style={{ height: "50vh", width: "auto" }}>
-                  <pre id="output">
-                    {responseText ||
-                      `Enter ${lang} words you want to memorize into tags below...`}
-                  </pre>
+                  <pre id="output">{responseText}</pre>
                 </div>
               }
             >

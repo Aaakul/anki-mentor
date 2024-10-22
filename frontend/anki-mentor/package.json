@@ -22,8 +22,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:preview": "cross-env REACT_APP_ENV=preview react-scripts build",
+    "build": "cross-env PUBLIC_URL=/ankimentor react-scripts build",
+    "build:preview": "cross-env REACT_APP_ENV=preview PUBLIC_URL=/anki-mentor react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
