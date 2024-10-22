@@ -52,7 +52,7 @@ const App: React.FC = () => {
       if (process.env.REACT_APP_ENV === "preview") {
         const lorem = lang === "Japanese" ? loremJP : loremEN;
         setResponseText(
-          `User input: ${words}; Lorem text: ${lorem}; Regenerate: ${regenerate}`
+          `Words: ${words}; Regenerate: ${regenerate}; Lorem text: ${lorem};`
         );
       } else {
         try {

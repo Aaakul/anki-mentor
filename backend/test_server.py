@@ -15,7 +15,7 @@ def chat():
     regenerate = data.get("regenerate") 
     lorem = japanese_lorem if language == "Japanese" else lorem_latin
     if words:
-        test_response = (f"Words: {words}; Regenerate: {regenerate}; {lorem};")
+        test_response = (f"From backend: Words: {words}; Regenerate: {regenerate}; Lorem text: {lorem};")
         return jsonify({"response": test_response}), 200
     else:
         return jsonify({"error": "No message provided"}), 400
