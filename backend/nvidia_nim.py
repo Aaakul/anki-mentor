@@ -31,18 +31,29 @@ def chat():
                     Ignore unfriendly or incomprehensible content. 
                     Only the body part is needed, no explanation or instructions."""
     if words:
-        completion = client.chat.completions.create(
-            model="meta/llama-3.1-405b-instruct",
-            messages=[{"role": "user", "content": send_message}],
-            temperature=0.2,
-            top_p=0.7,
-            max_tokens=1024,
-            stream=False 
-        )
-        response = completion.choices[0].message.content
-        return jsonify({"response": response})
+        print(f"Sending message to NVIDIA API: {send_message}")
+        try:
+            completion = client.chat.completions.create(
+                model="meta/llama-3.1-405b-instruct",
+                messages=[{"role": "user", "content": send_message}],
+                temperature=0.2,
+                top_p=0.7,
+                max_tokens=1024,
+                stream=False
+            )
+            print(f"Received response from NVIDIA API: {completion}")
+
+            if isinstance(completion, str):
+                return jsonify({"error": f"API returned an unexpected string: {completion}"}), 500
+
+            response = completion.choices[0].message.content
+            print(f"Extracted response: {response}")
+            return jsonify({"response": response})
+        except Exception as e:
+            print(f"Error calling NVIDIA API: {e}")
+            return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"error": "No message provided"}), 400
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5000,)
+    app.run(debug=False, host='0.0.0.0', port=5000)
