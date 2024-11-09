@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "antd";
 import OutputCard from "./OutputCard";
 import CardTitle from "./CardTitle";
@@ -7,31 +7,31 @@ import CardExtra from "./CardExtra";
 interface MainCardProps {
   isDarkTheme: boolean;
   onToggleTheme: () => void;
-  actionIcons: JSX.Element[];
+  actionIcons: React.ReactNode[];
+  responseText: string;
+  tags: string[];
+  setTags: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const MainCard: React.FC<MainCardProps> = ({
   isDarkTheme,
   onToggleTheme,
   actionIcons,
+  responseText,
+  tags,
+  setTags,
 }) => {
-  // Output language
-  const [lang, setLang] = useState<string>("Japanese");
-  const [responseText, setResponseText] = useState<string>(
-    `Enter ${lang} words you want to memorize into tags below...`
-  );
-
   return (
     <Card
+      className="main-card"
       bordered={false}
-      title={<CardTitle isDarkTheme={true} onToggleTheme={onToggleTheme} />}
-      style={{
-        height: "80vh",
-      }}
+      title={
+        <CardTitle isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} />
+      }
       actions={actionIcons}
       extra={<CardExtra />}
     >
-      <OutputCard responseText={responseText} />
+      <OutputCard tags={tags} setTags={setTags} responseText={responseText} />
     </Card>
   );
 };

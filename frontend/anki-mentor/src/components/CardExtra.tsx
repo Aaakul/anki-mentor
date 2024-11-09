@@ -9,12 +9,7 @@ const CardExtra: React.FC = () => {
         href="https://www.github.com/aaakul"
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          color: "inherit",
-          fontSize: "large",
-          marginRight: 0,
-          margin: "auto",
-        }}
+        className="main-card-extra"
       >
         <GithubOutlined />
       </a>

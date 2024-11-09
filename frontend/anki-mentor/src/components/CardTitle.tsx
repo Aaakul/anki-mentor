@@ -33,8 +33,8 @@ const CardTitle: React.FC<CardTitleProps> = ({
         {isDarkTheme ? <SunOutlined /> : <MoonOutlined />}
       </div>
       <div className="titles">
-        <h2 style={{ margin: 0, marginBottom: "0.25rem" }}>anki mentor</h2>
-        <p style={{ margin: 0, marginBottom: "0.25rem" }}>{subtitle}</p>
+        <h2>anki mentor</h2>
+        <p>{subtitle}</p>
       </div>
     </div>
   );
