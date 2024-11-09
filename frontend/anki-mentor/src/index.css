@@ -12,7 +12,7 @@ code {
     monospace;
 }
 
-.card-header-container {
+.card-title-container {
   display: flex;
   /* justify-content: "space-between"; */
   align-items: "center";
@@ -37,4 +37,12 @@ code {
   white-space: pre-wrap;
   word-wrap: break-word;
   padding: 0.5rem;
+}
+
+footer {
+  text-align: center;
+  height: 10vh;
+  a {
+    color: inherit;
+  }
 }
