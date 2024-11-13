@@ -4,8 +4,8 @@
 
 ### Create a _.env_ file to save your api keys:
 
-- For nvidia.nim.py:
+- For gh_marketplace.py:
 
-  > NV_API=YOUR-TOKEN-GOES-HERE
+  > GITHUB_TOKEN=YOUR-TOKEN-GOES-HERE
 
-- You can get free limited access of NVIDIA NIM on https://build.nvidia.com/
+- You can get free limited access on https://github.com/marketplace

@@ -1,5 +1,2 @@
 # GITHUB_TOKEN=<your-github-token-goes-here>
 .env
-
-# My API access is still waiting for approval
-gh_marketplace_sample.py
